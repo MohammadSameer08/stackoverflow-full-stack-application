@@ -52,25 +52,25 @@ export default async function createQuestionCollection() {
     `Attributes for collection ${questionsCollection} created successfully.`,
   );
 
-  await Promise.all([
-    databases.createIndex(
-      db,
-      questionsCollection,
-      "title_index",
-      DatabasesIndexType.Fulltext,
-      ["title"],
-      [OrderBy.Asc],
-    ),
-    databases.createIndex(
-      db,
-      questionsCollection,
-      "authorId_index",
-      DatabasesIndexType.Fulltext,
-      ["authorId"],
-      [OrderBy.Asc],
-    ),
-  ]);
-  console.log(
-    `Index for collection ${questionsCollection} created successfully.`,
-  );
+  //   await Promise.all([
+  //     databases.createIndex(
+  //       db,
+  //       questionsCollection,
+  //       "title_index",
+  //       DatabasesIndexType.Fulltext,
+  //       ["title"],
+  //       [OrderBy.Asc],
+  //     ),
+  //     databases.createIndex(
+  //       db,
+  //       questionsCollection,
+  //       "authorId_index",
+  //       DatabasesIndexType.Fulltext,
+  //       ["authorId"],
+  //       [OrderBy.Asc],
+  //     ),
+  //   ]);
+  //   console.log(
+  //     `Index for collection ${questionsCollection} created successfully.`,
+  //   );
 }
