@@ -18,7 +18,7 @@ import { Confetti } from "@/components/magicui/confetti";
 interface QuestionDocument extends Models.Document {
     title: string;
     content: string;
-    tags: string[];
+    tags: string;
     authorId: string;
     attachmentId?: string;
 }
@@ -58,7 +58,11 @@ const QuestionForm = ({ question }: { question?: Models.Document }) => {
         title: String(typedQuestion?.title || ""),
         content: String(typedQuestion?.content || ""),
         authorId: user?.$id,
-        tags: new Set((typedQuestion?.tags || []) as string[]),
+        tags: new Set(
+            typedQuestion?.tags
+                ? (typedQuestion.tags as string).split(",").filter((t: string) => t.trim().length > 0)
+                : []
+        ),
         attachment: null as File | null,
     });
 
@@ -96,20 +100,20 @@ const QuestionForm = ({ question }: { question?: Models.Document }) => {
     };
 
     const create = async () => {
-        if (!formData.attachment) throw new Error("Please upload an image");
-
-        const storageResponse = await storage.createFile(
-            questionAttachmentBucket,
-            ID.unique(),
-            formData.attachment
-        );
+        const storageResponse = formData.attachment
+            ? await storage.createFile(
+                questionAttachmentBucket,
+                ID.unique(),
+                formData.attachment
+            )
+            : null;
 
         const response = await databases.createDocument(db, questionsCollection, ID.unique(), {
             title: formData.title,
             content: formData.content,
             authorId: formData.authorId,
-            tags: Array.from(formData.tags),
-            attachmentId: storageResponse.$id,
+            tags: Array.from(formData.tags).join(","),
+            attachmentId: storageResponse?.$id || "",
         });
 
         loadConfetti();
@@ -138,7 +142,7 @@ const QuestionForm = ({ question }: { question?: Models.Document }) => {
             title: formData.title,
             content: formData.content,
             authorId: formData.authorId,
-            tags: Array.from(formData.tags),
+            tags: Array.from(formData.tags).join(","),
             attachmentId: attachmentId,
         });
 
@@ -204,6 +208,8 @@ const QuestionForm = ({ question }: { question?: Models.Document }) => {
                     </small>
                 </Label>
                 <RTE
+                    data-color-mode="dark"
+                    className="!text-white"
                     value={formData.content}
                     onChange={value => setFormData(prev => ({ ...prev, content: value || "" }))}
                 />

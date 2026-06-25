@@ -9,10 +9,11 @@ interface QuestionDocument extends Models.Document {
     title: string;
 }
 
-const Page = async ({ params }: { params: { quesId: string; quesName: string } }) => {
-    const question = await databases.getDocument(db, questionsCollection, params.quesId);
+const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: string }> }) => {
+    const { quesId } = await params;
+    const question = await databases.getDocument(db, questionsCollection, quesId);
 
-    return <EditQues question={question as unknown as QuestionDocument} />;
+    return <EditQues question={JSON.parse(JSON.stringify(question)) as unknown as QuestionDocument} />;
 };
 
 export default Page;

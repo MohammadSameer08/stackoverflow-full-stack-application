@@ -2,32 +2,6 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
-interface MousePosition {
-    x: number;
-    y: number;
-}
-
-function MousePosition(): MousePosition {
-    const [mousePosition, setMousePosition] = useState<MousePosition>({
-        x: 0,
-        y: 0,
-    });
-
-    useEffect(() => {
-        const handleMouseMove = (event: MouseEvent) => {
-            setMousePosition({ x: event.clientX, y: event.clientY });
-        };
-
-        window.addEventListener("mousemove", handleMouseMove);
-
-        return () => {
-            window.removeEventListener("mousemove", handleMouseMove);
-        };
-    }, []);
-
-    return mousePosition;
-}
-
 interface ParticlesProps {
     className?: string;
     quantity?: number;
@@ -39,6 +13,7 @@ interface ParticlesProps {
     vx?: number;
     vy?: number;
 }
+
 function hexToRgb(hex: string): number[] {
     hex = hex.replace("#", "");
     const hexInt = parseInt(hex, 16);
@@ -59,15 +34,33 @@ const Particles: React.FC<ParticlesProps> = ({
     vx = 0,
     vy = 0,
 }) => {
+    // Mouse position state - moved directly into component
+    const [mousePosition, setMousePosition] = useState<{ x: number; y: number }>({
+        x: 0,
+        y: 0,
+    });
+
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const canvasContainerRef = useRef<HTMLDivElement>(null);
     const context = useRef<CanvasRenderingContext2D | null>(null);
     const circles = useRef<any[]>([]);
-    const mousePosition = MousePosition();
     const mouse = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
     const canvasSize = useRef<{ w: number; h: number }>({ w: 0, h: 0 });
     const dpr = typeof window !== "undefined" ? window.devicePixelRatio : 1;
     const animateRef = useRef<(() => void) | null>(null);
+
+    // Set up mouse move listener
+    useEffect(() => {
+        const handleMouseMove = (event: MouseEvent) => {
+            setMousePosition({ x: event.clientX, y: event.clientY });
+        };
+
+        window.addEventListener("mousemove", handleMouseMove);
+
+        return () => {
+            window.removeEventListener("mousemove", handleMouseMove);
+        };
+    }, []);
 
     type Circle = {
         x: number;
@@ -187,6 +180,7 @@ const Particles: React.FC<ParticlesProps> = ({
     }, [mousePosition.x, mousePosition.y]);
 
     const animate = useCallback(() => {
+        onMouseMove(); // Update mouse position based on current mousePosition state
         clearContext();
         circles.current.forEach((circle: Circle, i: number) => {
             // Handle the alpha value
@@ -235,7 +229,7 @@ const Particles: React.FC<ParticlesProps> = ({
                 animateRef.current();
             }
         });
-    }, [clearContext, remapValue, ease, staticity, drawCircle, circleParams, vx, vy]);
+    }, [clearContext, remapValue, ease, staticity, drawCircle, circleParams, vx, vy, onMouseMove]);
 
     // Update the ref whenever animate changes
     useEffect(() => {
@@ -254,10 +248,6 @@ const Particles: React.FC<ParticlesProps> = ({
             window.removeEventListener("resize", initCanvas);
         };
     }, [initCanvas, animate]);
-
-    useEffect(() => {
-        onMouseMove();
-    }, [onMouseMove]);
 
     useEffect(() => {
         initCanvas();

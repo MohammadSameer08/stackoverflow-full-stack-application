@@ -10,7 +10,7 @@ import convertDateToRelativeTime from "@/utils/relativeTime";
 
 interface QuestionDocument extends Models.Document {
     title: string;
-    tags: string[];
+    tags: string;
     totalVotes: number;
     totalAnswers: number;
     author?: { $id: string; name: string; reputation: number };
@@ -46,15 +46,18 @@ const QuestionCard = ({ ques }: { ques: Models.Document }) => {
                     <h2 className="text-xl">{question.title}</h2>
                 </Link>
                 <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
-                    {question.tags.map((tag: string) => (
-                        <Link
-                            key={tag}
-                            href={`/questions?tag=${tag}`}
-                            className="inline-block rounded-lg bg-white/10 px-2 py-0.5 duration-200 hover:bg-white/20"
-                        >
-                            #{tag}
-                        </Link>
-                    ))}
+                    {(question.tags || "")
+                        .split(",")
+                        .filter((tag: string) => tag.trim())
+                        .map((tag: string) => (
+                            <Link
+                                key={tag}
+                                href={`/questions?tag=${tag.trim()}`}
+                                className="inline-block rounded-lg bg-white/10 px-2 py-0.5 duration-200 hover:bg-white/20"
+                            >
+                                #{tag.trim()}
+                            </Link>
+                        ))}
                     <div className="ml-auto flex items-center gap-1">
                         {question.author ? (
                             <>
