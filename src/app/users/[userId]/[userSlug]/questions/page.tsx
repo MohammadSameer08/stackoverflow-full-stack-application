@@ -1,6 +1,6 @@
 import Pagination from "@/components/Pagination";
 import QuestionCard from "@/components/QuestionCard";
-import { answerCollection, db, questionsCollection, voteCollection } from "@/models/name";
+import { answerCollection, db, questionCollection, voteCollection } from "@/models/name";
 import { databases, users } from "@/models/server/config";
 import { UserPrefs } from "@/store/Auth";
 import { Query } from "node-appwrite";
@@ -22,7 +22,7 @@ const Page = async ({
         Query.limit(25),
     ];
 
-    const questions = await databases.listDocuments(db, questionsCollection, queries);
+    const questions = await databases.listDocuments(db, questionCollection, queries);
 
     questions.documents = await Promise.all(
         questions.documents.map(async ques => {

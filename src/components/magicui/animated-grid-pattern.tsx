@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { cn } from "@/lib/utils";
@@ -57,9 +56,9 @@ export function GridPattern({
             currentSquares.map(sq =>
                 sq.id === id
                     ? {
-                        ...sq,
-                        pos: getPos(),
-                    }
+                          ...sq,
+                          pos: getPos(),
+                      }
                     : sq
             )
         );
@@ -68,18 +67,14 @@ export function GridPattern({
     // Update squares to animate in
     useEffect(() => {
         if (dimensions.width && dimensions.height) {
-            const newSquares = generateSquares(numSquares);
-            const timeoutId = setTimeout(() => {
-                setSquares(newSquares);
-            }, 0);
-            return () => clearTimeout(timeoutId);
+            setSquares(generateSquares(numSquares));
         }
     }, [dimensions, numSquares]);
 
     // Resize observer to update container dimensions
     useEffect(() => {
         const resizeObserver = new ResizeObserver(entries => {
-            for (const entry of entries) {
+            for (let entry of entries) {
                 setDimensions({
                     width: entry.contentRect.width,
                     height: entry.contentRect.height,

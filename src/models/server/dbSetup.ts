@@ -3,44 +3,31 @@ import createAnswerCollection from "./answer.collection";
 import createCommentCollection from "./comment.collection";
 import createQuestionCollection from "./question.collection";
 import createVoteCollection from "./vote.collection";
-import getOrCreateStorage from "./storageSetup";
 
 import { databases } from "./config";
 
-export default async function getOrCreateDB() {
+export default async function getOrCreateDB(){
   try {
-    await databases.get(db);
-    console.log("Database Connected");
-  } catch {
+    await databases.get(db)
+    console.log("Database connection")
+  } catch (error) {
     try {
-      await databases.create(db, db);
-      console.log("Database Created");
+      await databases.create(db, db)
+      console.log("database created")
+      //create collections
+      await Promise.all([
+        createQuestionCollection(),
+        createAnswerCollection(),
+        createCommentCollection(),
+        createVoteCollection(),
 
-      // Create each collection with individual error handling
-      await createCollectionSafely("Questions", createQuestionCollection);
-      await createCollectionSafely("Answers", createAnswerCollection);
-      await createCollectionSafely("Comments", createCommentCollection);
-      await createCollectionSafely("Votes", createVoteCollection);
-      await createCollectionSafely("Storage", getOrCreateStorage);
-
-      console.log("Database Setup Completed");
-      console.log("Database Connected");
-    } catch (_error) {
-      console.error("Error creating database:", _error);
+      ])
+      console.log("Collection created")
+      console.log("Database connected")
+    } catch (error) {
+      console.log("Error creating databases or collection", error)
     }
   }
 
-  return databases;
-}
-
-async function createCollectionSafely(
-  name: string,
-  createFn: () => Promise<void>,
-) {
-  try {
-    await createFn();
-    console.log(`${name} collection created successfully`);
-  } catch (error) {
-    console.error(`Error creating ${name} collection:`, error);
-  }
+  return databases
 }

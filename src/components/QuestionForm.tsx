@@ -12,16 +12,8 @@ import { Models, ID } from "appwrite";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { databases, storage } from "@/models/client/config";
-import { db, questionAttachmentBucket, questionsCollection } from "@/models/name";
+import { db, questionAttachmentBucket, questionCollection } from "@/models/name";
 import { Confetti } from "@/components/magicui/confetti";
-
-interface QuestionDocument extends Models.Document {
-    title: string;
-    content: string;
-    tags: string;
-    authorId: string;
-    attachmentId?: string;
-}
 
 const LabelInputContainer = ({
     children,
@@ -49,20 +41,15 @@ const LabelInputContainer = ({
  * ******************************************************************************
  */
 const QuestionForm = ({ question }: { question?: Models.Document }) => {
-    const typedQuestion = question as QuestionDocument | undefined;
     const { user } = useAuthStore();
     const [tag, setTag] = React.useState("");
     const router = useRouter();
 
     const [formData, setFormData] = React.useState({
-        title: String(typedQuestion?.title || ""),
-        content: String(typedQuestion?.content || ""),
+        title: String(question?.title || ""),
+        content: String(question?.content || ""),
         authorId: user?.$id,
-        tags: new Set(
-            typedQuestion?.tags
-                ? (typedQuestion.tags as string).split(",").filter((t: string) => t.trim().length > 0)
-                : []
-        ),
+        tags: new Set((question?.tags || []) as string[]),
         attachment: null as File | null,
     });
 
@@ -100,20 +87,23 @@ const QuestionForm = ({ question }: { question?: Models.Document }) => {
     };
 
     const create = async () => {
-        const storageResponse = formData.attachment
-            ? await storage.createFile(
+        let attachmentId = "";
+
+        if (formData.attachment) {
+            const storageResponse = await storage.createFile(
                 questionAttachmentBucket,
                 ID.unique(),
                 formData.attachment
-            )
-            : null;
+            );
+            attachmentId = storageResponse.$id;
+        }
 
-        const response = await databases.createDocument(db, questionsCollection, ID.unique(), {
+        const response = await databases.createDocument(db, questionCollection, ID.unique(), {
             title: formData.title,
             content: formData.content,
             authorId: formData.authorId,
-            tags: Array.from(formData.tags).join(","),
-            attachmentId: storageResponse?.$id || "",
+            tags: Array.from(formData.tags),
+            attachmentId: attachmentId,
         });
 
         loadConfetti();
@@ -124,25 +114,29 @@ const QuestionForm = ({ question }: { question?: Models.Document }) => {
     const update = async () => {
         if (!question) throw new Error("Please provide a question");
 
-        const attachmentId = await (async () => {
-            if (!formData.attachment) return typedQuestion?.attachmentId as string;
+        let attachmentId = question?.attachmentId as string;
 
-            await storage.deleteFile(questionAttachmentBucket, typedQuestion?.attachmentId || "");
+        if (formData.attachment) {
+            // Delete old attachment if it exists
+            if (question.attachmentId) {
+                await storage.deleteFile(questionAttachmentBucket, question.attachmentId);
+            }
 
+            // Upload new attachment
             const file = await storage.createFile(
                 questionAttachmentBucket,
                 ID.unique(),
                 formData.attachment
             );
 
-            return file.$id;
-        })();
+            attachmentId = file.$id;
+        }
 
-        const response = await databases.updateDocument(db, questionsCollection, question.$id, {
+        const response = await databases.updateDocument(db, questionCollection, question.$id, {
             title: formData.title,
             content: formData.content,
             authorId: formData.authorId,
-            tags: Array.from(formData.tags).join(","),
+            tags: Array.from(formData.tags),
             attachmentId: attachmentId,
         });
 
@@ -208,15 +202,13 @@ const QuestionForm = ({ question }: { question?: Models.Document }) => {
                     </small>
                 </Label>
                 <RTE
-                    data-color-mode="dark"
-                    className="!text-white"
                     value={formData.content}
                     onChange={value => setFormData(prev => ({ ...prev, content: value || "" }))}
                 />
             </LabelInputContainer>
             <LabelInputContainer>
                 <Label htmlFor="image">
-                    Image
+                    Image (Optional)
                     <br />
                     <small>
                         Add image to your question to make it more clear and easier to understand.

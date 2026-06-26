@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { answerCollection, db, questionsCollection, voteCollection } from "@/models/name";
+import { answerCollection, db, questionCollection, voteCollection } from "@/models/name";
 import { databases, users } from "@/models/server/config";
 import { UserPrefs } from "@/store/Auth";
 import { NextRequest, NextResponse } from "next/server";
@@ -21,7 +20,7 @@ export async function POST(request: NextRequest) {
             // Decrease the reputation of the question/answer author
             const questionOrAnswer = await databases.getDocument(
                 db,
-                type === "question" ? questionsCollection : answerCollection,
+                type === "question" ? questionCollection : answerCollection,
                 typeId
             );
 
@@ -47,7 +46,7 @@ export async function POST(request: NextRequest) {
             // Increate/Decrease the reputation of the question/answer author accordingly
             const questionOrAnswer = await databases.getDocument(
                 db,
-                type === "question" ? questionsCollection : answerCollection,
+                type === "question" ? questionCollection : answerCollection,
                 typeId
             );
 

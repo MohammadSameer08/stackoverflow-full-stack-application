@@ -3,13 +3,13 @@ import { UserPrefs } from "@/store/Auth";
 import React from "react";
 import { MagicCard, MagicContainer } from "@/components/magicui/magic-card";
 import NumberTicker from "@/components/magicui/number-ticker";
-import { answerCollection, db, questionsCollection } from "@/models/name";
+import { answerCollection, db, questionCollection } from "@/models/name";
 import { Query } from "node-appwrite";
 
 const Page = async ({ params }: { params: { userId: string; userSlug: string } }) => {
     const [user, questions, answers] = await Promise.all([
         users.get<UserPrefs>(params.userId),
-        databases.listDocuments(db, questionsCollection, [
+        databases.listDocuments(db, questionCollection, [
             Query.equal("authorId", params.userId),
             Query.limit(1), // for optimization
         ]),

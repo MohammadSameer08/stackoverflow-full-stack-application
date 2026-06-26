@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, ReactNode } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -12,7 +12,7 @@ export const FloatingNav = ({
     navItems: {
         name: string;
         link: string;
-        icon?: ReactNode;
+        icon?: JSX.Element;
     }[];
     className?: string;
 }) => {
@@ -29,7 +29,7 @@ export const FloatingNav = ({
             return;
         }
         if (typeof current === "number") {
-            const direction = current! - scrollYProgress.getPrevious()!;
+            let direction = current! - scrollYProgress.getPrevious()!;
 
             if (scrollYProgress.get() < 0.05) {
                 setVisible(false);

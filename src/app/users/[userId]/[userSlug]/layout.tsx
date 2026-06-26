@@ -22,7 +22,7 @@ const Layout = async ({
                 <div className="w-40 shrink-0">
                     <picture className="block w-full">
                         <img
-                            src={avatars.getInitials(user.name, 200, 200)}
+                            src={avatars.getInitials(user.name, 200, 200).href}
                             alt={user.name}
                             className="h-full w-full rounded-xl object-cover"
                         />

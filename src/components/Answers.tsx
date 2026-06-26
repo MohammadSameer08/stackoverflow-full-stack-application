@@ -16,14 +16,7 @@ const Answers = ({
     answers: _answers,
     questionId,
 }: {
-    answers: Models.DocumentList<Models.Document & {
-        content: string;
-        authorId: string;
-        upvotesDocuments: { documents: any[]; total: number };
-        downvotesDocuments: { documents: any[]; total: number };
-        comments: { documents: any[]; total: number };
-        author: any;
-    }>;
+    answers: Models.DocumentList<Models.Document>;
     questionId: string;
 }) => {
     const [answers, setAnswers] = React.useState(_answers);
@@ -115,7 +108,7 @@ const Answers = ({
                         <div className="mt-4 flex items-center justify-end gap-1">
                             <picture>
                                 <img
-                                    src={avatars.getInitials(answer.author.name, 36, 36)}
+                                    src={avatars.getInitials(answer.author.name, 36, 36).href}
                                     alt={answer.author.name}
                                     className="rounded-lg"
                                 />

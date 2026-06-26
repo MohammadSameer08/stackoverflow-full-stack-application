@@ -1,12 +1,12 @@
 import QuestionCard from "@/components/QuestionCard";
-import { answerCollection, db, questionsCollection, voteCollection } from "@/models/name";
+import { answerCollection, db, questionCollection, voteCollection } from "@/models/name";
 import { databases, users } from "@/models/server/config";
 import { UserPrefs } from "@/store/Auth";
 import { Query } from "node-appwrite";
 import React from "react";
 
 const LatestQuestions = async () => {
-    const questions = await databases.listDocuments(db, questionsCollection, [
+    const questions = await databases.listDocuments(db, questionCollection, [
         Query.limit(5),
         Query.orderDesc("$createdAt"),
     ]);

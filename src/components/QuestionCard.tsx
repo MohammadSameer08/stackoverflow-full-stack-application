@@ -8,17 +8,7 @@ import slugify from "@/utils/slugify";
 import { avatars } from "@/models/client/config";
 import convertDateToRelativeTime from "@/utils/relativeTime";
 
-interface QuestionDocument extends Models.Document {
-    title: string;
-    tags: string;
-    totalVotes: number;
-    totalAnswers: number;
-    author?: { $id: string; name: string; reputation: number };
-    authorId: string;
-}
-
 const QuestionCard = ({ ques }: { ques: Models.Document }) => {
-    const question = ques as QuestionDocument;
     const [height, setHeight] = React.useState(0);
     const ref = React.useRef<HTMLDivElement>(null);
 
@@ -35,52 +25,55 @@ const QuestionCard = ({ ques }: { ques: Models.Document }) => {
         >
             <BorderBeam size={height} duration={12} delay={9} />
             <div className="relative shrink-0 text-sm sm:text-right">
-                <p>{question.totalVotes} votes</p>
-                <p>{question.totalAnswers} answers</p>
+                <p>{ques.totalVotes} votes</p>
+                <p>{ques.totalAnswers} answers</p>
             </div>
             <div className="relative w-full">
                 <Link
-                    href={`/questions/${question.$id}/${slugify(question.title)}`}
+                    href={`/questions/${ques.$id}/${slugify(ques.title)}`}
                     className="text-orange-500 duration-200 hover:text-orange-600"
                 >
-                    <h2 className="text-xl">{question.title}</h2>
+                    <h2 className="text-xl">{ques.title}</h2>
                 </Link>
                 <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
-                    {(question.tags || "")
-                        .split(",")
-                        .filter((tag: string) => tag.trim())
-                        .map((tag: string) => (
+                    {Array.isArray(ques.tags) ? (
+                        ques.tags.map((tag: string) => (
                             <Link
                                 key={tag}
+                                href={`/questions?tag=${tag}`}
+                                className="inline-block rounded-lg bg-white/10 px-2 py-0.5 duration-200 hover:bg-white/20"
+                            >
+                                #{tag}
+                            </Link>
+                        ))
+                    ) : ques.tags && typeof ques.tags === "string" ? (
+                        ques.tags.split(",").map((tag: string) => (
+                            <Link
+                                key={tag.trim()}
                                 href={`/questions?tag=${tag.trim()}`}
                                 className="inline-block rounded-lg bg-white/10 px-2 py-0.5 duration-200 hover:bg-white/20"
                             >
                                 #{tag.trim()}
                             </Link>
-                        ))}
+                        ))
+                    ) : null}
                     <div className="ml-auto flex items-center gap-1">
-                        {question.author ? (
-                            <>
-                                <picture>
-                                    <img
-                                        src={avatars.getInitials(question.author.name, 24, 24)}
-                                        alt={question.author.name}
-                                        className="rounded-lg"
-                                    />
-                                </picture>
-                                <Link
-                                    href={`/users/${question.author.$id}/${slugify(question.author.name)}`}
-                                    className="text-orange-500 hover:text-orange-600"
-                                >
-                                    {question.author.name}
-                                </Link>
-                                <strong>&quot;{question.author.reputation}&quot;</strong>
-                            </>
-                        ) : (
-                            <span className="text-white/60">Unknown Author</span>
-                        )}
+                        <picture>
+                            <img
+                                src={avatars.getInitials(ques.author.name, 24, 24).href}
+                                alt={ques.author.name}
+                                className="rounded-lg"
+                            />
+                        </picture>
+                        <Link
+                            href={`/users/${ques.author.$id}/${slugify(ques.author.name)}`}
+                            className="text-orange-500 hover:text-orange-600"
+                        >
+                            {ques.author.name}
+                        </Link>
+                        <strong>&quot;{ques.author.reputation}&quot;</strong>
                     </div>
-                    <span>asked {convertDateToRelativeTime(new Date(question.$createdAt))}</span>
+                    <span>asked {convertDateToRelativeTime(new Date(ques.$createdAt))}</span>
                 </div>
             </div>
         </div>

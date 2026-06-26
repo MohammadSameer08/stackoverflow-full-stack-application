@@ -9,7 +9,7 @@ import {
     answerCollection,
     db,
     voteCollection,
-    questionsCollection,
+    questionCollection,
     commentCollection,
     questionAttachmentBucket,
 } from "@/models/name";
@@ -18,6 +18,7 @@ import { storage } from "@/models/client/config";
 import { UserPrefs } from "@/store/Auth";
 import convertDateToRelativeTime from "@/utils/relativeTime";
 import slugify from "@/utils/slugify";
+import { IconEdit } from "@tabler/icons-react";
 import Link from "next/link";
 import { Query } from "node-appwrite";
 import React from "react";
@@ -25,30 +26,28 @@ import DeleteQuestion from "./DeleteQuestion";
 import EditQuestion from "./EditQuestion";
 import { TracingBeam } from "@/components/ui/tracing-beam";
 
-const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: string }> }) => {
-    const { quesId, quesName } = await params;
-
+const Page = async ({ params }: { params: { quesId: string; quesName: string } }) => {
     const [question, answers, upvotes, downvotes, comments] = await Promise.all([
-        databases.getDocument(db, questionsCollection, quesId),
+        databases.getDocument(db, questionCollection, params.quesId),
         databases.listDocuments(db, answerCollection, [
             Query.orderDesc("$createdAt"),
-            Query.equal("questionId", quesId),
+            Query.equal("questionId", params.quesId),
         ]),
         databases.listDocuments(db, voteCollection, [
-            Query.equal("typeId", quesId),
+            Query.equal("typeId", params.quesId),
             Query.equal("type", "question"),
             Query.equal("voteStatus", "upvoted"),
             Query.limit(1), // for optimization
         ]),
         databases.listDocuments(db, voteCollection, [
-            Query.equal("typeId", quesId),
+            Query.equal("typeId", params.quesId),
             Query.equal("type", "question"),
             Query.equal("voteStatus", "downvoted"),
             Query.limit(1), // for optimization
         ]),
         databases.listDocuments(db, commentCollection, [
             Query.equal("type", "question"),
-            Query.equal("typeId", quesId),
+            Query.equal("typeId", params.quesId),
             Query.orderDesc("$createdAt"),
         ]),
     ]);
@@ -109,8 +108,8 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
                 return {
                     ...answer,
                     comments,
-                    upvotesDocuments: JSON.parse(JSON.stringify(upvotes)),
-                    downvotesDocuments: JSON.parse(JSON.stringify(downvotes)),
+                    upvotesDocuments: upvotes,
+                    downvotesDocuments: downvotes,
                     author: {
                         $id: author.$id,
                         name: author.name,
@@ -157,8 +156,8 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
                             type="question"
                             id={question.$id}
                             className="w-full"
-                            upvotes={JSON.parse(JSON.stringify(upvotes))}
-                            downvotes={JSON.parse(JSON.stringify(downvotes))}
+                            upvotes={upvotes}
+                            downvotes={downvotes}
                         />
                         <EditQuestion
                             questionId={question.$id}
@@ -169,34 +168,47 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
                     </div>
                     <div className="w-full overflow-auto">
                         <MarkdownPreview className="rounded-xl p-4" source={question.content} />
-                        <picture>
-                            <img
-                                src={storage.getFilePreview(
-                                    questionAttachmentBucket,
-                                    question.attachmentId
-                                )}
-                                alt={question.title}
-                                className="mt-3 rounded-lg"
-                            />
-                        </picture>
+                        {question.attachmentId && (
+                            <picture>
+                                <img
+                                    src={
+                                        storage.getFilePreview(
+                                            questionAttachmentBucket,
+                                            question.attachmentId
+                                        ).href
+                                    }
+                                    alt={question.title}
+                                    className="mt-3 rounded-lg"
+                                />
+                            </picture>
+                        )}
                         <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
-                            {(question.tags || "")
-                                .split(",")
-                                .filter((tag: string) => tag.trim())
-                                .map((tag: string) => (
+                            {Array.isArray(question.tags) ? (
+                                question.tags.map((tag: string) => (
                                     <Link
                                         key={tag}
+                                        href={`/questions?tag=${tag}`}
+                                        className="inline-block rounded-lg bg-white/10 px-2 py-0.5 duration-200 hover:bg-white/20"
+                                    >
+                                        #{tag}
+                                    </Link>
+                                ))
+                            ) : question.tags && typeof question.tags === "string" ? (
+                                question.tags.split(",").map((tag: string) => (
+                                    <Link
+                                        key={tag.trim()}
                                         href={`/questions?tag=${tag.trim()}`}
                                         className="inline-block rounded-lg bg-white/10 px-2 py-0.5 duration-200 hover:bg-white/20"
                                     >
                                         #{tag.trim()}
                                     </Link>
-                                ))}
+                                ))
+                            ) : null}
                         </div>
                         <div className="mt-4 flex items-center justify-end gap-1">
                             <picture>
                                 <img
-                                    src={avatars.getInitials(author.name, 36, 36)}
+                                    src={avatars.getInitials(author.name, 36, 36).href}
                                     alt={author.name}
                                     className="rounded-lg"
                                 />
@@ -214,7 +226,7 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
                             </div>
                         </div>
                         <Comments
-                            comments={JSON.parse(JSON.stringify(comments))}
+                            comments={comments}
                             className="mt-4"
                             type="question"
                             typeId={question.$id}
@@ -222,7 +234,7 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
                         <hr className="my-4 border-white/40" />
                     </div>
                 </div>
-                <Answers answers={JSON.parse(JSON.stringify(answers))} questionId={question.$id} />
+                <Answers answers={answers} questionId={question.$id} />
             </div>
         </TracingBeam>
     );

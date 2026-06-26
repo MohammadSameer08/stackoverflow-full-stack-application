@@ -1,6 +1,6 @@
 import Pagination from "@/components/Pagination";
 import { MarkdownPreview } from "@/components/RTE";
-import { answerCollection, db, questionsCollection } from "@/models/name";
+import { answerCollection, db, questionCollection } from "@/models/name";
 import { databases } from "@/models/server/config";
 import slugify from "@/utils/slugify";
 import Link from "next/link";
@@ -27,7 +27,7 @@ const Page = async ({
 
     answers.documents = await Promise.all(
         answers.documents.map(async ans => {
-            const question = await databases.getDocument(db, questionsCollection, ans.questionId, [
+            const question = await databases.getDocument(db, questionCollection, ans.questionId, [
                 Query.select(["title"]),
             ]);
             return { ...ans, question };

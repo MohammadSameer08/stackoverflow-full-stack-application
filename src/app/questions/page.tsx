@@ -1,5 +1,5 @@
 import { databases, users } from "@/models/server/config";
-import { answerCollection, db, voteCollection, questionsCollection } from "@/models/name";
+import { answerCollection, db, voteCollection, questionCollection } from "@/models/name";
 import { Query } from "node-appwrite";
 import React from "react";
 import Link from "next/link";
@@ -12,27 +12,26 @@ import Search from "./Search";
 const Page = async ({
     searchParams,
 }: {
-    searchParams: Promise<{ page?: string; tag?: string; search?: string }>;
+    searchParams: { page?: string; tag?: string; search?: string };
 }) => {
-    const params = await searchParams;
-    const page = params.page || "1";
+    searchParams.page ||= "1";
 
     const queries = [
         Query.orderDesc("$createdAt"),
-        Query.offset((+page - 1) * 25),
+        Query.offset((+searchParams.page - 1) * 25),
         Query.limit(25),
     ];
 
-    if (params.tag) queries.push(Query.equal("tags", params.tag));
-    if (params.search)
+    if (searchParams.tag) queries.push(Query.equal("tags", searchParams.tag));
+    if (searchParams.search)
         queries.push(
             Query.or([
-                Query.search("title", params.search),
-                Query.search("content", params.search),
+                Query.search("title", searchParams.search),
+                Query.search("content", searchParams.search),
             ])
         );
 
-    const questions = await databases.listDocuments(db, questionsCollection, queries);
+    const questions = await databases.listDocuments(db, questionCollection, queries);
     console.log("Questions", questions)
 
     questions.documents = await Promise.all(

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { cn } from "@/lib/utils";
@@ -42,6 +41,25 @@ const MagicContainer = ({ children, className }: MagicContainerProps) => {
     const containerSize = useRef<{ w: number; h: number }>({ w: 0, h: 0 });
     const [boxes, setBoxes] = useState<Array<HTMLElement>>([]);
 
+    useEffect(() => {
+        init();
+        containerRef.current &&
+            setBoxes(Array.from(containerRef.current.children).map(el => el as HTMLElement));
+    }, []);
+
+    useEffect(() => {
+        init();
+        window.addEventListener("resize", init);
+
+        return () => {
+            window.removeEventListener("resize", init);
+        };
+    }, [setBoxes]);
+
+    useEffect(() => {
+        onMouseMove();
+    }, [mousePosition]);
+
     const init = () => {
         if (containerRef.current) {
             containerSize.current.w = containerRef.current.offsetWidth;
@@ -73,25 +91,6 @@ const MagicContainer = ({ children, className }: MagicContainerProps) => {
             });
         }
     };
-
-    useEffect(() => {
-        init();
-        containerRef.current &&
-            setBoxes(Array.from(containerRef.current.children).map(el => el as HTMLElement));
-    }, []);
-
-    useEffect(() => {
-        init();
-        window.addEventListener("resize", init);
-
-        return () => {
-            window.removeEventListener("resize", init);
-        };
-    }, [setBoxes]);
-
-    useEffect(() => {
-        onMouseMove();
-    }, [mousePosition]);
 
     return (
         <div className={cn("h-full w-full", className)} ref={containerRef}>

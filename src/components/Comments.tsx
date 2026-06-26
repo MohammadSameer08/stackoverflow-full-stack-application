@@ -11,14 +11,6 @@ import { ID, Models } from "appwrite";
 import Link from "next/link";
 import React from "react";
 
-interface CommentDocument extends Models.Document {
-    content: string;
-    authorId: string;
-    type: "question" | "answer";
-    typeId: string;
-    author?: { $id: string; name: string };
-}
-
 const Comments = ({
     comments: _comments,
     type,
@@ -30,7 +22,7 @@ const Comments = ({
     typeId: string;
     className?: string;
 }) => {
-    const [comments, setComments] = React.useState<Models.DocumentList<CommentDocument>>(_comments as Models.DocumentList<CommentDocument>);
+    const [comments, setComments] = React.useState(_comments);
     const [newComment, setNewComment] = React.useState("");
     const { user } = useAuthStore();
 
@@ -49,7 +41,7 @@ const Comments = ({
             setNewComment(() => "");
             setComments(prev => ({
                 total: prev.total + 1,
-                documents: [{ ...response, author: { $id: user.$id, name: user.name } } as unknown as CommentDocument, ...prev.documents],
+                documents: [{ ...response, author: user }, ...prev.documents],
             }));
         } catch (error: any) {
             window.alert(error?.message || "Error creating comment");
@@ -77,16 +69,12 @@ const Comments = ({
                     <div className="flex gap-2">
                         <p className="text-sm">
                             {comment.content} -{" "}
-                            {comment.author ? (
-                                <Link
-                                    href={`/users/${comment.author.$id}/${slugify(comment.author.name)}`}
-                                    className="text-orange-500 hover:text-orange-600"
-                                >
-                                    {comment.author.name}
-                                </Link>
-                            ) : (
-                                <span className="text-orange-500">Unknown User</span>
-                            )}{" "}
+                            <Link
+                                href={`/users/${comment.authorId}/${slugify(comment.author.name)}`}
+                                className="text-orange-500 hover:text-orange-600"
+                            >
+                                {comment.author.name}
+                            </Link>{" "}
                             <span className="opacity-60">
                                 {convertDateToRelativeTime(new Date(comment.$createdAt))}
                             </span>

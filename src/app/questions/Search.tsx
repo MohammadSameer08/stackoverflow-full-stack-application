@@ -10,6 +10,10 @@ const Search = () => {
     const router = useRouter();
     const [search, setSearch] = React.useState(searchParams.get("search") || "");
 
+    React.useEffect(() => {
+        setSearch(() => searchParams.get("search") || "");
+    }, [searchParams]);
+
     const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const newSearchParams = new URLSearchParams(searchParams);

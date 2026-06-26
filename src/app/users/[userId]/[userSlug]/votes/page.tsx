@@ -1,5 +1,5 @@
 import Pagination from "@/components/Pagination";
-import { answerCollection, db, questionsCollection, voteCollection } from "@/models/name";
+import { answerCollection, db, questionCollection, voteCollection } from "@/models/name";
 import { databases } from "@/models/server/config";
 import convertDateToRelativeTime from "@/utils/relativeTime";
 import slugify from "@/utils/slugify";
@@ -31,7 +31,7 @@ const Page = async ({
         votes.documents.map(async vote => {
             const questionOfTypeQuestion =
                 vote.type === "question"
-                    ? await databases.getDocument(db, questionsCollection, vote.typeId, [
+                    ? await databases.getDocument(db, questionCollection, vote.typeId, [
                           Query.select(["title"]),
                       ])
                     : null;
@@ -46,7 +46,7 @@ const Page = async ({
             const answer = await databases.getDocument(db, answerCollection, vote.typeId);
             const questionOfTypeAnswer = await databases.getDocument(
                 db,
-                questionsCollection,
+                questionCollection,
                 answer.questionId,
                 [Query.select(["title"])]
             );

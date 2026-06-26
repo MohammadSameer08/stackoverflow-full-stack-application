@@ -5,16 +5,9 @@ import { db, voteCollection } from "@/models/name";
 import { useAuthStore } from "@/store/Auth";
 import { cn } from "@/lib/utils";
 import { IconCaretUpFilled, IconCaretDownFilled } from "@tabler/icons-react";
-import { Models, Query } from "appwrite";
+import { ID, Models, Query } from "appwrite";
 import { useRouter } from "next/navigation";
 import React from "react";
-
-interface VoteDocument extends Models.Document {
-    voteStatus: "upvoted" | "downvoted";
-    type: "question" | "answer";
-    typeId: string;
-    votedById: string;
-}
 
 const VoteButtons = ({
     type,
@@ -29,7 +22,7 @@ const VoteButtons = ({
     downvotes: Models.DocumentList<Models.Document>;
     className?: string;
 }) => {
-    const [votedDocument, setVotedDocument] = React.useState<VoteDocument | null>(); // undefined means not fetched yet
+    const [votedDocument, setVotedDocument] = React.useState<Models.Document | null>(); // undefined means not fetched yet
     const [voteResult, setVoteResult] = React.useState<number>(upvotes.total - downvotes.total);
 
     const { user } = useAuthStore();
@@ -43,7 +36,7 @@ const VoteButtons = ({
                     Query.equal("typeId", id),
                     Query.equal("votedById", user.$id),
                 ]);
-                setVotedDocument(() => (response.documents[0] as unknown as VoteDocument) || null);
+                setVotedDocument(() => response.documents[0] || null);
             }
         })();
     }, [user, id, type]);
@@ -69,7 +62,7 @@ const VoteButtons = ({
             if (!response.ok) throw data;
 
             setVoteResult(() => data.data.voteResult);
-            setVotedDocument(() => (data.data.document as unknown as VoteDocument) || null);
+            setVotedDocument(() => data.data.document);
         } catch (error: any) {
             window.alert(error?.message || "Something went wrong");
         }
@@ -96,7 +89,7 @@ const VoteButtons = ({
             if (!response.ok) throw data;
 
             setVoteResult(() => data.data.voteResult);
-            setVotedDocument(() => (data.data.document as unknown as VoteDocument) || null);
+            setVotedDocument(() => data.data.document);
         } catch (error: any) {
             window.alert(error?.message || "Something went wrong");
         }

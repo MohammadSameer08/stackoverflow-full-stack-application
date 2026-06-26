@@ -1,76 +1,51 @@
-import { Permission, DatabasesIndexType, OrderBy } from "node-appwrite";
-import { db, questionsCollection } from "../name";
-import { databases } from "./config";
+import {IndexType, Permission} from "node-appwrite"
 
-export default async function createQuestionCollection() {
-  await databases.createCollection(
-    db,
-    questionsCollection,
-    questionsCollection,
-    [
-      Permission.read("any"),
-      Permission.read("users"),
-      Permission.create("any"),
-      Permission.update("any"),
-      Permission.delete("any"),
-    ],
-  );
-  console.log(`Collection ${questionsCollection} created successfully.`);
+import {db, questionCollection} from "../name"
+import {databases} from "./config"
+
+
+export default async function createQuestionCollection(){
+  // create collection
+  await databases.createCollection(db, questionCollection, questionCollection, [
+    Permission.read("any"),
+    Permission.read("users"),
+    Permission.create("users"),
+    Permission.update("users"),
+    Permission.delete("users"),
+  ])
+  console.log("Question collection is created")
+
+  //creating attributes and Indexes
 
   await Promise.all([
-    databases.createStringAttribute(
-      db,
-      questionsCollection,
-      "title",
-      255,
-      true,
-    ),
-    databases.createStringAttribute(
-      db,
-      questionsCollection,
-      "content",
-      1000,
-      true,
-    ),
-    databases.createStringAttribute(
-      db,
-      questionsCollection,
-      "authorId",
-      255,
-      true,
-    ),
-    databases.createStringAttribute(db, questionsCollection, "tags", 255, true),
-    databases.createStringAttribute(
-      db,
-      questionsCollection,
-      "attachmentId",
-      255,
-      true,
-    ),
+    databases.createStringAttribute(db, questionCollection, "title", 100, true),
+    databases.createStringAttribute(db, questionCollection, "content", 10000, true),
+    databases.createStringAttribute(db, questionCollection, "authorId", 50, true),
+    databases.createStringAttribute(db, questionCollection, "tags", 50, true, undefined, true),
+    databases.createStringAttribute(db, questionCollection, "attachmentId", 50, false),
   ]);
-  console.log(
-    `Attributes for collection ${questionsCollection} created successfully.`,
-  );
+  console.log("Question Attributes created")
 
-  //   await Promise.all([
-  //     databases.createIndex(
-  //       db,
-  //       questionsCollection,
-  //       "title_index",
-  //       DatabasesIndexType.Fulltext,
-  //       ["title"],
-  //       [OrderBy.Asc],
-  //     ),
-  //     databases.createIndex(
-  //       db,
-  //       questionsCollection,
-  //       "authorId_index",
-  //       DatabasesIndexType.Fulltext,
-  //       ["authorId"],
-  //       [OrderBy.Asc],
-  //     ),
-  //   ]);
-  //   console.log(
-  //     `Index for collection ${questionsCollection} created successfully.`,
-  //   );
+  // create Indexes
+
+  /*
+  await Promise.all([
+    databases.createIndex(
+      db,
+      questionCollection,
+      "title",
+      IndexType.Fulltext,
+      ["title"],
+      ['asc']
+    ),
+    databases.createIndex(
+      db,
+      questionCollection,
+      "content",
+      IndexType.Fulltext,
+      ["content"],
+      ['asc']
+    )
+  ])
+    */
 }
