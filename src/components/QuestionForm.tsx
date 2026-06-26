@@ -190,6 +190,9 @@ const QuestionForm = ({ question }: { question?: Models.Document }) => {
                     type="text"
                     value={formData.title}
                     onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                    data-color-mode="dark"
+                    className="rounded-md bg-slate-900 text-white border-slate-700 focus:border-slate-500"
+                    style={{ color: "white" }}
                 />
             </LabelInputContainer>
             <LabelInputContainer>
@@ -204,6 +207,9 @@ const QuestionForm = ({ question }: { question?: Models.Document }) => {
                 <RTE
                     value={formData.content}
                     onChange={value => setFormData(prev => ({ ...prev, content: value || "" }))}
+                    data-color-mode="dark"
+                    className="rounded-md overflow-hidden"
+                    style={{ backgroundColor: "transparent" }}
                 />
             </LabelInputContainer>
             <LabelInputContainer>
@@ -228,6 +234,9 @@ const QuestionForm = ({ question }: { question?: Models.Document }) => {
                             attachment: files[0],
                         }));
                     }}
+                    data-color-mode="dark"
+                    className="rounded-md bg-slate-900 text-white border-slate-700 focus:border-slate-500"
+                    style={{ color: "white" }}
                 />
             </LabelInputContainer>
             <LabelInputContainer>
@@ -248,6 +257,9 @@ const QuestionForm = ({ question }: { question?: Models.Document }) => {
                             type="text"
                             value={tag}
                             onChange={e => setTag(() => e.target.value)}
+                            data-color-mode="dark"
+                            className="rounded-md bg-slate-900 text-white border-slate-700 focus:border-slate-500"
+                            style={{ color: "white" }}
                         />
                     </div>
                     <button
